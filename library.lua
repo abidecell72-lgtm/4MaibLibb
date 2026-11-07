@@ -108,10 +108,10 @@ function Library:CreateWindow(config)
         TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
     }).Parent = Window.TopBar
 
-    -- Tombol Minimize [-]
+    -- Tombol Minimize (Kotak dengan simbol "-")
     local minBtn = new("TextButton", {
-        Size = UDim2.new(0, 36, 0, 30), Position = UDim2.new(1, -44, 0.5, -15),
-        BackgroundColor3 = Theme.colors.card, Text = "[-]", Font = Theme.fonts.bold, TextSize = 14,
+        Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -40, 0.5, -15),
+        BackgroundColor3 = Theme.colors.card, Text = "-", Font = Theme.fonts.bold, TextSize = 20,
         TextColor3 = Theme.colors.text, AutoButtonColor = false,
     }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
     minBtn.Parent = Window.TopBar
@@ -209,24 +209,56 @@ function Library:CreateWindow(config)
         
         if #Window.Tabs == 1 then Window:SelectTab(Page) end
 
-        -- METHOD: ADD CARD
-        function Page:AddCard(title)
-            local card = new("Frame", {
+        -- METHOD: ADD SECTION (Collapsible Card)
+        function Page:AddSection(title, defaultOpen)
+            local isOpen = defaultOpen ~= false 
+            local Section = { Elements = {} }
+
+            -- Container Utama
+            local container = new("Frame", {
                 Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Theme.colors.card, AutomaticSize = Enum.AutomaticSize.Y,
             }, {
                 new("UICorner", { CornerRadius = UDim.new(0, 8) }),
                 new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }),
-                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
-                new("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
+                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }),
             })
-            card.Parent = Page.Frame
+            container.Parent = Page.Frame
+
+            -- Header Section
+            local header = new("TextButton", {
+                Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, Text = "", AutoButtonColor = false,
+            })
+            header.Parent = container
+
+            local arrow = new("TextLabel", {
+                Size = UDim2.new(0, 24, 0, 24), Position = UDim2.new(0, 12, 0.5, -12), BackgroundTransparency = 1,
+                Text = isOpen and "v" or ">", Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.accent,
+            })
+            arrow.Parent = header
 
             new("TextLabel", {
-                Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1, Text = title,
-                Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.accent, TextXAlignment = Enum.TextXAlignment.Left,
-            }).Parent = card
+                Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 40, 0, 0), BackgroundTransparency = 1,
+                Text = title, Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
+            }).Parent = header
 
-            return card
+            -- Body (Isi Section)
+            local body = new("Frame", {
+                Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Visible = isOpen,
+            }, {
+                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) }),
+                new("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
+            })
+            body.Parent = container
+
+            -- Logic Buka Tutup
+            header.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                arrow.Text = isOpen and "v" or ">"
+                body.Visible = isOpen
+            end)
+
+            -- Return body biar bisa diisi Toggle/Slider
+            return body
         end
 
         -- METHOD: ADD TOGGLE
