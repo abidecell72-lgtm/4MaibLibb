@@ -119,60 +119,62 @@ function Library:CreateWindow(config)
     minBtn.MouseEnter:Connect(function() tween(minBtn, 0.1, {BackgroundColor3 = Theme.colors.panel, TextColor3 = Theme.colors.accent}) end)
     minBtn.MouseLeave:Connect(function() tween(minBtn, 0.1, {BackgroundColor3 = Theme.colors.card, TextColor3 = Theme.colors.text}) end)
 
-    -- Minimize Logic
+    -- ============================================
+    -- MINIMIZE LOGIC & FLOAT BUTTON
+    -- ============================================
     local minimized = false
-    local miniTab = new("TextButton", {
-        Name = "MinimizedTab", Size = UDim2.new(0, 100, 0, 35), Position = UDim2.new(0, 20, 0, 20),
-        BackgroundColor3 = Theme.colors.panel, Text = "ALTHERA", Font = Theme.fonts.bold, TextSize = 12,
-        TextColor3 = Theme.colors.text, Visible = false, AutoButtonColor = false,
+    local savedIconPos = UDim2.new(0, 20, 0, 100) -- Posisi float button
+    
+    -- Float Button (Gambar)
+    local miniBtn = new("ImageButton", {
+        Name = "MinimizedIcon", 
+        Size = UDim2.new(0, 42, 0, 42), -- 42x42 pixel
+        Position = savedIconPos,
+        BackgroundColor3 = Theme.colors.panel,
+        Image = "rbxassetid://129880169172545",
+        ImageColor3 = Theme.colors.text,
+        Visible = false, 
+        AutoButtonColor = false,
     }, { 
-        new("UICorner", { CornerRadius = UDim.new(0, 6) }),
-        new("UIStroke", { Color = Theme.colors.border, Thickness = 1 })
+        new("UICorner", { CornerRadius = UDim.new(0, 8) }), -- Ujung melengkung
+        new("UIStroke", { Color = Theme.colors.border, Thickness = 1.5 })
     })
-    miniTab.Parent = Window.Gui
+    miniBtn.Parent = Window.Gui
 
     minBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         Window.Main.Visible = not minimized
-        miniTab.Visible = minimized
+        miniBtn.Visible = minimized
     end)
 
-    miniTab.MouseButton1Click:Connect(function()
+    miniBtn.MouseButton1Click:Connect(function()
         minimized = false
         Window.Main.Visible = true
-        miniTab.Visible = false
+        miniBtn.Visible = false
     end)
 
-    -- TAB AREA (Sidebar di PC, Top-Nav di Mobile)
-    local tabBarW = isMobile and winSize.X.Offset or 160
+    -- TAB AREA (Sidebar di PC & Mobile)
+    local tabBarW = 130 -- Lebar sidebar (dibuat fix biar rapi di HP)
     Window.Sidebar = new("Frame", {
         Name = "Sidebar",
-        Size = isMobile and UDim2.new(1, 0, 0, 35) or UDim2.new(0, tabBarW, 1, -topBarH),
-        Position = isMobile and UDim2.new(0, 0, 0, topBarH) or UDim2.new(0, 0, 0, topBarH),
-        BackgroundColor3 = isMobile and Theme.colors.bg or Theme.colors.panel,
+        Size = UDim2.new(0, tabBarW, 1, -topBarH),
+        Position = UDim2.new(0, 0, 0, topBarH),
+        BackgroundColor3 = Theme.colors.panel,
         BorderSizePixel = 0,
+        ClipsDescendants = true,
     }, {
-        new("UICorner", { CornerRadius = UDim.new(0, isMobile and 0 or 8) }),
-        new("UIListLayout", { 
-            FillDirection = isMobile and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical,
-            SortOrder = Enum.SortOrder.LayoutOrder, 
-            Padding = UDim.new(0, 4) 
-        }),
-        new("UIPadding", { 
-            PaddingTop = UDim.new(0, isMobile and 4 or 12), 
-            PaddingLeft = UDim.new(0, 8), 
-            PaddingRight = UDim.new(0, 8) 
-        })
+        new("UICorner", { CornerRadius = UDim.new(0, 8) }),
+        new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
+        new("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
     })
     Window.Sidebar.Parent = Window.Main
 
     -- CONTENT AREA
-    local contentPosX = isMobile and 0 or 160
-    local contentPosY = isMobile and (topBarH + 35) or topBarH
-    local contentSizeY = isMobile and (winSize.Y.Offset - topBarH - 35) or (winSize.Y.Offset - topBarH)
+    local contentPosX = tabBarW
+    local contentSizeY = winSize.Y.Offset - topBarH
     
     Window.Content = new("Frame", {
-        Name = "Content", Size = UDim2.new(1, -contentPosX, 0, contentSizeY), Position = UDim2.new(0, contentPosX, 0, contentPosY),
+        Name = "Content", Size = UDim2.new(1, -contentPosX, 0, contentSizeY), Position = UDim2.new(0, contentPosX, 0, topBarH),
         BackgroundTransparency = 1,
     }, {
         new("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12) })
@@ -184,9 +186,8 @@ function Library:CreateWindow(config)
         local Page = { Elements = {} }
 
         -- Tombol Tab
-        local tabBtnSize = isMobile and UDim2.new(0, 80, 1, 0) or UDim2.new(1, 0, 0, 36)
         local tabBtn = new("TextButton", {
-            Name = "Tab_" .. name, Size = tabBtnSize, BackgroundColor3 = Theme.colors.panel,
+            Name = "Tab_" .. name, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.panel,
             Text = name, Font = Theme.fonts.bold, TextSize = 12, TextColor3 = Theme.colors.text2, AutoButtonColor = false,
         }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
         
@@ -224,20 +225,31 @@ function Library:CreateWindow(config)
             })
             container.Parent = Page.Frame
 
-            -- Header Section
+            -- Header Section (Area yang bisa diklik)
             local header = new("TextButton", {
-                Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, Text = "", AutoButtonColor = false,
+                Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, Text = "", AutoButtonColor = false,
             })
             header.Parent = container
 
+            -- Panah U+276F (❯) ditaruh di KANAN
             local arrow = new("TextLabel", {
-                Size = UDim2.new(0, 24, 0, 24), Position = UDim2.new(0, 12, 0.5, -12), BackgroundTransparency = 1,
-                Text = isOpen and "v" or ">", Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.accent,
+                Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -40, 0.5, -15), BackgroundTransparency = 1,
+                Text = "❯", 
+                Font = Theme.fonts.bold, TextSize = 18, TextColor3 = Theme.colors.accent,
+                TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Center
             })
             arrow.Parent = header
+            
+            -- Atur rotasi panah sesuai state awal (defaultOpen)
+            if not isOpen then
+                arrow.Rotation = 0 -- Kalau tutup, ngarah ke kanan (❯)
+            else
+                arrow.Rotation = 90 -- Kalau buka, ngarah ke bawah (diputer 90 derajat)
+            end
 
+            -- Text Judul (Digeser ke kiri karena panah pindah ke kanan)
             new("TextLabel", {
-                Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 40, 0, 0), BackgroundTransparency = 1,
+                Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
                 Text = title, Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
             }).Parent = header
 
@@ -253,11 +265,14 @@ function Library:CreateWindow(config)
             -- Logic Buka Tutup
             header.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
-                arrow.Text = isOpen and "v" or ">"
+                
+                -- Animasi rotasi panah pake Tween (Biar smooth)
+                local targetRotation = isOpen and 90 or 0
+                TweenService:Create(arrow, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = targetRotation}):Play()
+                
                 body.Visible = isOpen
             end)
 
-            -- Return body biar bisa diisi Toggle/Slider
             return body
         end
 
@@ -388,24 +403,24 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- DRAG WINDOW (PC)
-    if not isMobile then
-        local dragging, dragStart, startPos
-        Window.TopBar.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = true; dragStart = input.Position; startPos = Window.Main.Position
-            end
-        end)
-        Window.TopBar.InputChanged:Connect(function(input)
-            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local delta = input.Position - dragStart
-                Window.Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            end
-        end)
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-        end)
-    end
+    -- DRAG WINDOW (PC & Mobile Support)
+    local dragging, dragStart, startPos
+    Window.TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = Window.Main.Position
+        end
+    end)
+    Window.TopBar.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            Window.Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = false 
+        end
+    end)
 
     return Window
 end
