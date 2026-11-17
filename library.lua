@@ -1,5 +1,5 @@
 -- ============================================
--- ALTHERA UI LIBRARY (All-in-One)
+-- STARLESS UI LIBRARY (Clean & Minimalist)
 -- Created by Cabu
 -- ============================================
 
@@ -8,20 +8,18 @@ local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 
 -- ============================================
--- 1. THEME
+-- 1. THEME (Hitam, Perak, Putih)
 -- ============================================
 local Theme = {
     colors = {
-        bg      = Color3.fromHex("#0A0A0A"),
-        panel   = Color3.fromHex("#121212"),
-        card    = Color3.fromHex("#1A1A1A"),
-        accent  = Color3.fromHex("#E0E0E0"),
-        accent2 = Color3.fromHex("#FFFFFF"),
-        text    = Color3.fromHex("#F5F5F5"),
-        text2   = Color3.fromHex("#9E9E9E"),
-        border  = Color3.fromHex("#2C2C2C"),
-        
-        -- Warna 3 Titik (macOS Style)
+        bg      = Color3.fromHex("#0A0A0A"), -- Hitam pekat
+        panel   = Color3.fromHex("#121212"), -- Hitam keabuan
+        card    = Color3.fromHex("#1A1A1A"), -- Abu gelap
+        accent  = Color3.fromHex("#E0E0E0"), -- Perak
+        accent2 = Color3.fromHex("#FFFFFF"), -- Putih
+        text    = Color3.fromHex("#F5F5F5"), -- Putih tulang
+        text2   = Color3.fromHex("#9E9E9E"), -- Abu terang
+        border  = Color3.fromHex("#2C2C2C"), -- Garis tepi
         red     = Color3.fromHex("#FF5F56"),
         yellow  = Color3.fromHex("#FFBD2E"),
         green   = Color3.fromHex("#27C93F"),
@@ -33,25 +31,21 @@ local Theme = {
 }
 
 -- ============================================
--- 2. RESPONSIVE
+-- 2. FIXED SIZE (No Responsive)
 -- ============================================
-local Responsive = {}
-
-function Responsive.IsMobile()
+local function IsMobile()
     return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 end
 
-function Responsive.GetWindowSize()
-    local viewport = workspace.CurrentCamera.ViewportSize
-    local isMobile = Responsive.IsMobile()
-    local targetW = isMobile and 440 or 580
-    local targetH = isMobile and 300 or 380
-    local finalW = math.min(targetW, viewport.X - 40)
-    local finalH = math.min(targetH, viewport.Y - 100)
-    return UDim2.new(0, finalW, 0, finalH)
+local function GetWindowSize()
+    local isMobile = IsMobile()
+    -- Ukuran Fix: PC 580x380 | Mobile 440x300
+    local w = isMobile and 440 or 580
+    local h = isMobile and 300 or 380
+    return UDim2.new(0, w, 0, h)
 end
 
-function Responsive.GetWindowPosition(size)
+local function GetWindowPosition(size)
     return UDim2.new(0.5, -(size.X.Offset / 2), 0.5, -(size.Y.Offset / 2))
 end
 
@@ -74,24 +68,23 @@ end
 -- ============================================
 local Library = {}
 Library.Theme = Theme
-Library.Responsive = Responsive
 
 function Library:CreateWindow(config)
     local Window = { Tabs = {}, ActiveTab = nil, TabButtons = {} }
     config = config or {}
     
-    local isMobile = Responsive.IsMobile()
-    local winSize = Responsive.GetWindowSize()
-    local winPos = Responsive.GetWindowPosition(winSize)
+    local isMobile = IsMobile()
+    local winSize = GetWindowSize()
+    local winPos = GetWindowPosition(winSize)
     local topBarH = 45
 
-    Window.Gui = new("ScreenGui", { Name = "AltheraUI", ResetOnSpawn = false, IgnoreGuiInset = true, ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+    Window.Gui = new("ScreenGui", { Name = "StarlessUI", ResetOnSpawn = false, IgnoreGuiInset = true, ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
     Window.Gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
     -- MAIN FRAME
     Window.Main = new("Frame", {
         Name = "Main", Size = winSize, Position = winPos, BackgroundColor3 = Theme.colors.bg, BorderSizePixel = 0,
-        ClipsDescendants = true, -- Biar ga keluar batas pas di-resize
+        ClipsDescendants = true,
     }, {
         new("UICorner", { CornerRadius = UDim.new(0, 10) }),
         new("UIStroke", { Color = Theme.colors.border, Thickness = 1.5 }),
@@ -99,7 +92,7 @@ function Library:CreateWindow(config)
     Window.Main.Parent = Window.Gui
 
     -- ============================================
-    -- TOPBAR (3 Titik & Title)
+    -- TOPBAR
     -- ============================================
     Window.TopBar = new("Frame", {
         Name = "TopBar", Size = UDim2.new(1, 0, 0, topBarH), BackgroundColor3 = Theme.colors.panel, BorderSizePixel = 0,
@@ -108,47 +101,69 @@ function Library:CreateWindow(config)
     })
     Window.TopBar.Parent = Window.Main
 
-    -- 3 Titik macOS (Red, Yellow, Green)
-    local dotsContainer = new("Frame", {
-        Size = UDim2.new(0, 60, 1, 0), BackgroundTransparency = 1,
+    -- 3 Titik macOS
+    local dotsContainer = new("TextButton", {
+        Size = UDim2.new(0, 60, 1, 0), BackgroundTransparency = 1, Text = "",
     }, {
-        new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8), VerticalAlignment = Enum.VerticalAlignment.Center })
+        new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8), VerticalAlignment = Enum.VerticalAlignment.Center }),
+        new("UIPadding", { PaddingLeft = UDim.new(0, 12) })
     })
     dotsContainer.Parent = Window.TopBar
-    
-    -- Padding Kiri buat 3 titik
-    new("UIPadding", { PaddingLeft = UDim.new(0, 12) }).Parent = dotsContainer
 
-    local function makeDot(color, callback)
-        local dot = new("TextButton", {
-            Size = UDim2.new(0, 12, 0, 12), BackgroundColor3 = color, Text = "", AutoButtonColor = false
-        }, { new("UICorner", { CornerRadius = UDim.new(1, 0) }) })
-        dot.Parent = dotsContainer
-        if callback then dot.MouseButton1Click:Connect(callback) end
+    local function makeDot(color)
+        new("Frame", {
+            Size = UDim2.new(0, 12, 0, 12), BackgroundColor3 = color,
+        }, { new("UICorner", { CornerRadius = UDim.new(1, 0) }) }).Parent = dotsContainer
     end
-
-    makeDot(Theme.colors.red, function() Window.Gui:Destroy() end) -- Close (Merah)
-    makeDot(Theme.colors.yellow) -- Minimize (Kuning, bisa diisi fungsi minimize nanti)
-    makeDot(Theme.colors.green) -- Fullscreen (Hijau)
+    makeDot(Theme.colors.red)
+    makeDot(Theme.colors.yellow)
+    makeDot(Theme.colors.green)
 
     -- Title
     new("TextLabel", {
-        Size = UDim2.new(1, -100, 1, 0), Position = UDim2.new(0, 80, 0, 0), BackgroundTransparency = 1,
-        Text = config.Title or "ALTHERA UI", Font = Theme.fonts.bold, TextSize = isMobile and 13 or 15,
+        Size = UDim2.new(1, -160, 1, 0), Position = UDim2.new(0, 80, 0, 0), BackgroundTransparency = 1,
+        Text = config.Title or "STARLESS", Font = Theme.fonts.bold, TextSize = isMobile and 13 or 15,
         TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
     }).Parent = Window.TopBar
 
+    -- Tombol Minimize (Kotak dengan simbol "-")
+    local minBtn = new("TextButton", {
+        Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -40, 0.5, -15),
+        BackgroundColor3 = Theme.colors.card, Text = "-", Font = Theme.fonts.bold, TextSize = 20,
+        TextColor3 = Theme.colors.text, AutoButtonColor = false,
+    }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+    minBtn.Parent = Window.TopBar
+    
+    minBtn.MouseEnter:Connect(function() tween(minBtn, 0.1, {BackgroundColor3 = Theme.colors.panel, TextColor3 = Theme.colors.accent}) end)
+    minBtn.MouseLeave:Connect(function() tween(minBtn, 0.1, {BackgroundColor3 = Theme.colors.card, TextColor3 = Theme.colors.text}) end)
+
     -- ============================================
-    -- TAB AREA (Sidebar)
+    -- MINIMIZE LOGIC (SIMPLE VERSION)
+    -- ============================================
+    local minimized = false
+    local miniBtn = new("ImageButton", {
+        Name = "MinimizedIcon", Size = UDim2.new(0, 42, 0, 42), Position = UDim2.new(0, 20, 0, 100),
+        BackgroundTransparency = 1, Image = "rbxassetid://129880169172545", ImageColor3 = Theme.colors.text,
+        Visible = false, AutoButtonColor = false,
+    })
+    miniBtn.Parent = Window.Gui
+
+    local function setMinimized(state)
+        minimized = state
+        Window.Main.Visible = not minimized
+        miniBtn.Visible = minimized
+    end
+
+    minBtn.MouseButton1Click:Connect(function() setMinimized(true) end)
+    miniBtn.MouseButton1Click:Connect(function() setMinimized(false) end)
+
+    -- ============================================
+    -- SIDEBAR
     -- ============================================
     local tabBarW = 130
     Window.Sidebar = new("Frame", {
-        Name = "Sidebar",
-        Size = UDim2.new(0, tabBarW, 1, -topBarH),
-        Position = UDim2.new(0, 0, 0, topBarH),
-        BackgroundColor3 = Theme.colors.panel,
-        BorderSizePixel = 0,
-        ClipsDescendants = true,
+        Name = "Sidebar", Size = UDim2.new(0, tabBarW, 1, -topBarH), Position = UDim2.new(0, 0, 0, topBarH),
+        BackgroundColor3 = Theme.colors.panel, BorderSizePixel = 0, ClipsDescendants = true,
     }, {
         new("UICorner", { CornerRadius = UDim.new(0, 10) }),
         new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
@@ -157,125 +172,54 @@ function Library:CreateWindow(config)
     Window.Sidebar.Parent = Window.Main
 
     -- ============================================
-    -- CONTENT AREA (Udah dibenerin)
+    -- CONTENT AREA
     -- ============================================
     local contentPosX = tabBarW
-    -- Konten ngisi sisa layar & otomatis ngecil pas di-resize
     Window.Content = new("Frame", {
-        Name = "Content", 
-        Size = UDim2.new(1, -contentPosX, 1, -topBarH), 
-        Position = UDim2.new(0, contentPosX, 0, topBarH),
+        Name = "Content", Size = UDim2.new(1, -contentPosX, 1, -topBarH), Position = UDim2.new(0, contentPosX, 0, topBarH),
         BackgroundTransparency = 1,
     }, {
-        new("UIPadding", { 
-            PaddingTop = UDim.new(0, 12), 
-            PaddingLeft = UDim.new(0, 12), 
-            PaddingRight = UDim.new(0, 24), -- Ekstra buat scrollbar
-            PaddingBottom = UDim.new(0, 12) 
-        })
+        new("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12) })
     })
     Window.Content.Parent = Window.Main
 
-    -- CREATE TAB FUNCTION
+    -- ============================================
+    -- CREATE TAB FUNCTION (TANPA SECTION)
+    -- ============================================
     function Window:CreateTab(name)
         local Page = { Elements = {} }
 
-        -- Tombol Tab
         local tabBtn = new("TextButton", {
             Name = "Tab_" .. name, Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.panel,
             Text = name, Font = Theme.fonts.bold, TextSize = 12, TextColor3 = Theme.colors.text2, AutoButtonColor = false,
         }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
-        
         tabBtn.Parent = Window.Sidebar
         tabBtn.MouseButton1Click:Connect(function() Window:SelectTab(Page) end)
         Page.Btn = tabBtn
-        table.insert(Window.TabButtons, tabBtn)
 
-        -- Frame Konten per Tab
+        -- Frame Konten (Langsung nampung Toggle/Slider tanpa Card)
         Page.Frame = new("ScrollingFrame", {
-            Name = "Page_" .. name, 
-            Size = UDim2.new(1, 0, 1, 0), 
-            BackgroundTransparency = 1,
-            ScrollBarThickness = 2, 
-            ScrollBarImageColor3 = Theme.colors.text2, 
-            CanvasSize = UDim2.new(0, 0, 0, 0), 
-            AutomaticCanvasSize = Enum.AutomaticSize.Y, 
-            Visible = false,
+            Name = "Page_" .. name, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
+            ScrollBarThickness = 2, ScrollBarImageColor3 = Theme.colors.text2, 
+            CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, Visible = false,
         }, {
             new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) }),
+            new("UIPadding", { PaddingRight = UDim.new(0, 8) })
         })
         Page.Frame.Parent = Window.Content
         table.insert(Window.Tabs, Page)
         
         if #Window.Tabs == 1 then Window:SelectTab(Page) end
 
-        -- ============================================
-        -- METHOD: ADD SECTION (Icon Gambar, BUKAN TEKS)
-        -- ============================================
-        function Page:AddSection(title, defaultOpen)
-            local isOpen = defaultOpen ~= false 
-
-            -- Container Utama
-            local container = new("Frame", {
-                Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Theme.colors.card, AutomaticSize = Enum.AutomaticSize.Y,
-            }, {
-                new("UICorner", { CornerRadius = UDim.new(0, 8) }),
-                new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }),
-                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }),
-            })
-            container.Parent = Page.Frame
-
-            -- Header Section
-            local header = new("TextButton", {
-                Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, Text = "", AutoButtonColor = false,
-            })
-            header.Parent = container
-
-            -- TEXT JUDUL (Kiri)
-            new("TextLabel", {
-                Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
-                Text = title, Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
-            }).Parent = header
-
-            -- ICON GAMBAR (Kanan) - Pake Asset Arrow
-            -- Kalau lu punya asset ID sendiri, ganti "rbxassetid://..." di bawah
-            local arrowImg = new("ImageLabel", {
-                Size = UDim2.new(0, 16, 0, 16), 
-                Position = UDim2.new(1, -28, 0.5, -8), 
-                BackgroundTransparency = 1,
-                Image = "rbxassetid://6031091004", -- Asset ID panah kanan (ArrowRight)
-                ImageColor3 = Theme.colors.accent,
-                Rotation = isOpen and 90 or 0,
-            })
-            arrowImg.Parent = header
-
-            -- Body (Isi Section)
-            local body = new("Frame", {
-                Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Visible = isOpen,
-            }, {
-                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) }),
-                new("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
-            })
-            body.Parent = container
-
-            header.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                tween(arrowImg, 0.2, {Rotation = isOpen and 90 or 0})
-                body.Visible = isOpen
-            end)
-
-            return body
-        end
-
-        -- METHOD: ADD TOGGLE
-        function Page:AddToggle(parent, label, default, callback)
+        -- METHOD: ADD TOGGLE (Langsung masuk ke Page)
+        function Page:AddToggle(label, default, callback)
             local row = new("Frame", {
                 Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.card,
             }, {
                 new("UICorner", { CornerRadius = UDim.new(0, 6) }),
                 new("UIStroke", { Color = Theme.colors.border, Thickness = 1 })
             })
-            row.Parent = parent or Page.Frame
+            row.Parent = Page.Frame
 
             new("TextLabel", {
                 Size = UDim2.new(1, -60, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
@@ -315,10 +259,10 @@ function Library:CreateWindow(config)
             end)
         end
 
-        -- METHOD: ADD SLIDER
-        function Page:AddSlider(parent, label, min, max, default, callback)
+        -- METHOD: ADD SLIDER (Langsung masuk ke Page)
+        function Page:AddSlider(label, min, max, default, callback)
             local row = new("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundTransparency = 1 })
-            row.Parent = parent or Page.Frame
+            row.Parent = Page.Frame
 
             new("TextLabel", {
                 Size = UDim2.new(1, -60, 0, 18), BackgroundTransparency = 1, Text = label,
@@ -362,13 +306,11 @@ function Library:CreateWindow(config)
                     updateSlider(input.Position)
                 end
             end)
-            
             UserInputService.InputChanged:Connect(function(input)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     updateSlider(input.Position)
                 end
             end)
-            
             UserInputService.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = false
@@ -393,55 +335,21 @@ function Library:CreateWindow(config)
     end
 
     -- ============================================
-    -- RESIZE HANDLER (Garis di Bawah)
-    -- ============================================
-    local resizeHandle = new("TextButton", {
-        Name = "ResizeHandle",
-        Size = UDim2.new(1, -20, 0, 10), 
-        Position = UDim2.new(0, 10, 1, -15),
-        BackgroundColor3 = Theme.colors.border,
-        Text = "",
-        AutoButtonColor = false,
-    }, { new("UICorner", { CornerRadius = UDim.new(1, 0) }) })
-    resizeHandle.Parent = Window.Main
-
-    local resizing = false
-    local startSize, startPos
-
-    resizeHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            resizing = true
-            startSize = Window.Main.AbsoluteSize
-            startPos = input.Position
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - startPos
-            -- Hitung ukuran baru dengan batas minimum
-            local newW = math.max(300, startSize.X + delta.X)
-            local newH = math.max(200, startSize.Y + delta.Y)
-            Window.Main.Size = UDim2.new(0, newW, 0, newH)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            resizing = false
-        end
-    end)
-
-    -- ============================================
-    -- DRAG WINDOW (Pindah Posisi)
+    -- DRAG WINDOW
     -- ============================================
     local dragging, dragStart, dragStartPos
+    dotsContainer.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; dragStartPos = Window.Main.Position
+        end
+    end)
     Window.TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true; dragStart = input.Position; dragStartPos = Window.Main.Position
         end
     end)
-    Window.TopBar.InputChanged:Connect(function(input)
+    
+    UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
             Window.Main.Position = UDim2.new(dragStartPos.X.Scale, dragStartPos.X.Offset + delta.X, dragStartPos.Y.Scale, dragStartPos.Y.Offset + delta.Y)
