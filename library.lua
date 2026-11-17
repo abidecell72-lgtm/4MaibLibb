@@ -1,5 +1,5 @@
 -- ============================================
--- STARLESS UI LIBRARY (V4)
+-- STARLESS UI LIBRARY (V4.1 COMPACT)
 -- Created by Cabu
 -- ============================================
 
@@ -73,7 +73,7 @@ local Library = {}
 Library.Theme = Theme
 
 -- ============================================
--- 4. NOTIFY (toast pojok kanan bawah)
+-- 4. NOTIFY
 -- ============================================
 local NotifyGui
 local function ensureNotifyGui()
@@ -177,7 +177,6 @@ end
 function Library:CreateWindow(config)
     config = config or {}
 
-    -- cleanup UI lama (fix double UI)
     local old = Players.LocalPlayer:FindFirstChild("PlayerGui")
         and Players.LocalPlayer.PlayerGui:FindFirstChild("StarlessUI")
     if old then old:Destroy() end
@@ -287,8 +286,8 @@ function Library:CreateWindow(config)
     end
     minBtn.MouseButton1Click:Connect(function() setMinimized(true) end)
 
-    -- SIDEBAR
-    local tabBarW = 130
+    -- SIDEBAR (COMPACT: 110)
+    local tabBarW = 110
     Window.Sidebar = new("Frame", {
         Name = "Sidebar",
         Size = UDim2.new(0, tabBarW, 1, -topBarH),
@@ -325,12 +324,10 @@ function Library:CreateWindow(config)
     })
     Window.Content.Parent = Window.Main
 
-    -- ============================================
-    -- ELEMENT BUILDERS (dipakai di dalam Page)
-    -- ============================================
+    -- BUILDERS
     local function buildRow(parent, height)
         local row = new("Frame", {
-            Size = UDim2.new(1, 0, 0, height or 36),
+            Size = UDim2.new(1, 0, 0, height or 30),
             BackgroundColor3 = Theme.colors.card,
         }, {
             new("UICorner", { CornerRadius = UDim.new(0, 6) }),
@@ -347,7 +344,7 @@ function Library:CreateWindow(config)
             BackgroundTransparency = 1,
             Text = text,
             Font = Theme.fonts.body,
-            TextSize = 13,
+            TextSize = 12,
             TextColor3 = Theme.colors.text,
             TextXAlignment = Enum.TextXAlignment.Left,
         })
@@ -356,19 +353,17 @@ function Library:CreateWindow(config)
         return l
     end
 
-    -- ============================================
     -- CreateTab
-    -- ============================================
     function Window:CreateTab(name)
         local Page = { Elements = {} }
 
         local tabBtn = new("TextButton", {
             Name = "Tab_" .. name,
-            Size = UDim2.new(1, 0, 0, 36),
+            Size = UDim2.new(1, 0, 0, 28),
             BackgroundColor3 = Theme.colors.panel,
             Text = name,
             Font = Theme.fonts.bold,
-            TextSize = 12,
+            TextSize = 11,
             TextColor3 = Theme.colors.text2,
             AutoButtonColor = false,
         }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
@@ -388,7 +383,7 @@ function Library:CreateWindow(config)
         }, {
             new("UIListLayout", {
                 SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 8),
+                Padding = UDim.new(0, 6),
             }),
             new("UIPadding", { PaddingRight = UDim.new(0, 8) }),
         })
@@ -397,9 +392,7 @@ function Library:CreateWindow(config)
         table.insert(Window.Tabs, Page)
         if #Window.Tabs == 1 then Window:SelectTab(Page) end
 
-        -- ============================================
-        -- AddSection (collapsible container)
-        -- ============================================
+        -- AddSection
         function Page:AddSection(title, defaultOpen)
             local isOpen = defaultOpen ~= false
 
@@ -411,7 +404,7 @@ function Library:CreateWindow(config)
             wrapper.Parent = Page.Frame
 
             local container = new("Frame", {
-                Size = UDim2.new(1, 0, 0, 40),
+                Size = UDim2.new(1, 0, 0, 30),
                 BackgroundColor3 = Theme.colors.card,
                 AutomaticSize = Enum.AutomaticSize.Y,
             }, {
@@ -422,7 +415,7 @@ function Library:CreateWindow(config)
             container.Parent = wrapper
 
             local header = new("TextButton", {
-                Size = UDim2.new(1, 0, 0, 40),
+                Size = UDim2.new(1, 0, 0, 30),
                 BackgroundTransparency = 1,
                 Text = "",
                 AutoButtonColor = false,
@@ -435,7 +428,7 @@ function Library:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Text = title,
                 Font = Theme.fonts.bold,
-                TextSize = 14,
+                TextSize = 12,
                 TextColor3 = Theme.colors.text,
                 TextXAlignment = Enum.TextXAlignment.Left,
             }).Parent = header
@@ -446,7 +439,7 @@ function Library:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Text = isOpen and "v" or ">",
                 Font = Theme.fonts.bold,
-                TextSize = 14,
+                TextSize = 12,
                 TextColor3 = Theme.colors.accent,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 TextYAlignment = Enum.TextYAlignment.Center,
@@ -460,9 +453,9 @@ function Library:CreateWindow(config)
                 AutomaticSize = Enum.AutomaticSize.Y,
             }, {
                 new("UIPadding", {
-                    PaddingBottom = UDim.new(0, 8),
-                    PaddingLeft = UDim.new(0, 8),
-                    PaddingRight = UDim.new(0, 8),
+                    PaddingBottom = UDim.new(0, 5),
+                    PaddingLeft = UDim.new(0, 5),
+                    PaddingRight = UDim.new(0, 5),
                 }),
             })
             bodyWrapper.Parent = container
@@ -474,7 +467,7 @@ function Library:CreateWindow(config)
             }, {
                 new("UIListLayout", {
                     SortOrder = Enum.SortOrder.LayoutOrder,
-                    Padding = UDim.new(0, 6),
+                    Padding = UDim.new(0, 4),
                 }),
             })
             bodyLayout.Parent = bodyWrapper
@@ -485,31 +478,24 @@ function Library:CreateWindow(config)
                 bodyWrapper.Visible = isOpen
             end)
 
-            -- Section object: element builders menempel di sini
             local Section = {}
             Section.Layout = bodyLayout
 
-            -- ============================================
-            -- AddLabel
-            -- ============================================
             function Section:AddLabel(text)
-                local row = buildRow(bodyLayout, 28)
-                buildLabel(row, text, { TextColor3 = Theme.colors.text2, TextSize = 12 })
+                local row = buildRow(bodyLayout, 24)
+                buildLabel(row, text, { TextColor3 = Theme.colors.text2, TextSize = 11 })
                 table.insert(Page.Elements, row)
                 return row
             end
 
-            -- ============================================
-            -- AddToggle
-            -- ============================================
             function Section:AddToggle(label, default, callback)
-                local row = buildRow(bodyLayout, 36)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label)
 
                 local state = default or false
                 local track = new("Frame", {
-                    Size = UDim2.new(0, isMobile and 44 or 36, 0, isMobile and 24 or 20),
-                    Position = UDim2.new(1, isMobile and -54 or -46, 0.5, isMobile and -12 or -10),
+                    Size = UDim2.new(0, isMobile and 44 or 32, 0, isMobile and 24 or 18),
+                    Position = UDim2.new(1, isMobile and -54 or -42, 0.5, isMobile and -12 or -9),
                     BackgroundColor3 = state and Theme.colors.accent2 or Theme.colors.panel,
                 }, {
                     new("UICorner", { CornerRadius = UDim.new(1, 0) }),
@@ -517,7 +503,7 @@ function Library:CreateWindow(config)
                 })
                 track.Parent = row
 
-                local knobSize = isMobile and 20 or 16
+                local knobSize = isMobile and 20 or 14
                 local knobPosOn  = UDim2.new(1, -(knobSize + 2), 0.5, -(knobSize / 2))
                 local knobPosOff = UDim2.new(0, 2, 0.5, -(knobSize / 2))
 
@@ -551,11 +537,8 @@ function Library:CreateWindow(config)
                 return row
             end
 
-            -- ============================================
-            -- AddDropdown
-            -- ============================================
             function Section:AddDropdown(label, options, default, callback)
-                local row = buildRow(bodyLayout, 36)
+                local row = buildRow(bodyLayout, 30)
                 row.ClipsDescendants = false
                 row.ZIndex = 2
 
@@ -567,7 +550,7 @@ function Library:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Text = default or "Select...",
                     Font = Theme.fonts.bold,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.accent,
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
@@ -579,7 +562,7 @@ function Library:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Text = ">",
                     Font = Theme.fonts.bold,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text2,
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
@@ -592,7 +575,6 @@ function Library:CreateWindow(config)
                 })
                 click.Parent = row
 
-                -- List ditaruh di parent row, tapi ZIndex tinggi
                 local list = new("Frame", {
                     Size = UDim2.new(0, 200, 0, 0),
                     Position = UDim2.new(1, 10, 0, 0),
@@ -615,7 +597,7 @@ function Library:CreateWindow(config)
                     Text = "",
                     PlaceholderText = "Search...",
                     Font = Theme.fonts.body,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
                     ClearTextOnFocus = false,
@@ -663,11 +645,11 @@ function Library:CreateWindow(config)
 
                 for _, opt in ipairs(options) do
                     local optBtn = new("TextButton", {
-                        Size = UDim2.new(1, 0, 0, 28),
+                        Size = UDim2.new(1, 0, 0, 26),
                         BackgroundColor3 = Theme.colors.panel,
                         Text = opt,
                         Font = Theme.fonts.body,
-                        TextSize = 12,
+                        TextSize = 11,
                         TextColor3 = Theme.colors.text,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         AutoButtonColor = false,
@@ -712,16 +694,13 @@ function Library:CreateWindow(config)
                 return row
             end
 
-            -- ============================================
-            -- AddButton
-            -- ============================================
             function Section:AddButton(label, callback)
                 local btn = new("TextButton", {
-                    Size = UDim2.new(1, 0, 0, 32),
+                    Size = UDim2.new(1, 0, 0, 28),
                     BackgroundColor3 = Theme.colors.card,
                     Text = label,
                     Font = Theme.fonts.bold,
-                    TextSize = 13,
+                    TextSize = 12,
                     TextColor3 = Theme.colors.text,
                     AutoButtonColor = false,
                 }, {
@@ -742,21 +721,18 @@ function Library:CreateWindow(config)
                 return btn
             end
 
-            -- ============================================
-            -- AddTextBox (string)
-            -- ============================================
             function Section:AddTextBox(label, placeholder, default, callback)
-                local row = buildRow(bodyLayout, 36)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(0.5, -12, 1, 0) })
 
                 local box = new("TextBox", {
-                    Size = UDim2.new(0.5, -24, 0, 24),
-                    Position = UDim2.new(0.5, 12, 0.5, -12),
+                    Size = UDim2.new(0.5, -24, 0, 22),
+                    Position = UDim2.new(0.5, 12, 0.5, -11),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = default or "",
                     PlaceholderText = placeholder or "",
                     Font = Theme.fonts.body,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -780,21 +756,18 @@ function Library:CreateWindow(config)
                 return box
             end
 
-            -- ============================================
-            -- AddNumericBox (angka)
-            -- ============================================
             function Section:AddNumericBox(label, placeholder, default, min, max, callback)
-                local row = buildRow(bodyLayout, 36)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(0.5, -12, 1, 0) })
 
                 local box = new("TextBox", {
-                    Size = UDim2.new(0.5, -24, 0, 24),
-                    Position = UDim2.new(0.5, 12, 0.5, -12),
+                    Size = UDim2.new(0.5, -24, 0, 22),
+                    Position = UDim2.new(0.5, 12, 0.5, -11),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = default and tostring(default) or "",
                     PlaceholderText = placeholder or "0",
                     Font = Theme.fonts.body,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
                     TextXAlignment = Enum.TextXAlignment.Left,
@@ -810,7 +783,6 @@ function Library:CreateWindow(config)
                 })
                 box.Parent = row
 
-                -- sanitize realtime
                 box:GetPropertyChangedSignal("Text"):Connect(function()
                     local cleaned = box.Text:gsub("[^%-%d%.]", "")
                     local minusCount = select(2, cleaned:gsub("%-", ""))
@@ -847,20 +819,17 @@ function Library:CreateWindow(config)
                 return box
             end
 
-            -- ============================================
-            -- AddKeybind
-            -- ============================================
             function Section:AddKeybind(label, defaultKey, callback)
-                local row = buildRow(bodyLayout, 36)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(1, -80, 1, 0) })
 
                 local keyBtn = new("TextButton", {
-                    Size = UDim2.new(0, 60, 0, 24),
-                    Position = UDim2.new(1, -70, 0.5, -12),
+                    Size = UDim2.new(0, 60, 0, 22),
+                    Position = UDim2.new(1, -70, 0.5, -11),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = defaultKey and defaultKey.Name or "None",
                     Font = Theme.fonts.bold,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.accent,
                     AutoButtonColor = false,
                 }, {
@@ -899,7 +868,6 @@ function Library:CreateWindow(config)
                 return keyBtn
             end
 
-            -- utility section
             function Section:SetOpen(state)
                 isOpen = state
                 arrow.Text = isOpen and "v" or ">"
@@ -916,9 +884,6 @@ function Library:CreateWindow(config)
         return Page
     end
 
-    -- ============================================
-    -- SelectTab
-    -- ============================================
     function Window:SelectTab(Page)
         Window.ActiveTab = Page
         for _, tab in ipairs(Window.Tabs) do
@@ -935,9 +900,7 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- ============================================
-    -- DRAG (window + float btn) — handler digabung
-    -- ============================================
+    -- DRAG
     local dragState = {
         window = { dragging = false, start = nil, startPos = nil },
         float  = { dragging = false, start = nil, startPos = nil, moved = false },
@@ -1001,9 +964,6 @@ function Library:CreateWindow(config)
         end
     end)
 
-    -- ============================================
-    -- Destroy
-    -- ============================================
     function Window:Destroy()
         Window.Gui:Destroy()
     end
