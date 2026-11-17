@@ -1,5 +1,5 @@
 -- ============================================
--- STARLESS UI LIBRARY (Right-Side Dropdown + Search)
+-- STARLESS UI LIBRARY (V3)
 -- Created by Cabu
 -- ============================================
 
@@ -83,7 +83,7 @@ function Library:CreateWindow(config)
 
     Window.Main = new("Frame", {
         Name = "Main", Size = winSize, Position = winPos, BackgroundColor3 = Theme.colors.bg, BorderSizePixel = 0,
-        ClipsDescendants = true, -- KUNCI: Biar dropdown ga keluar window
+        ClipsDescendants = true, 
     }, {
         new("UICorner", { CornerRadius = UDim.new(0, 10) }),
         new("UIStroke", { Color = Theme.colors.border, Thickness = 1.5 }),
@@ -122,6 +122,9 @@ function Library:CreateWindow(config)
     }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }) })
     minBtn.Parent = Window.TopBar
 
+    -- ============================================
+    -- MINIMIZE & DRAG FLOAT BUTTON
+    -- ============================================
     local minimized = false
     local miniBtn = new("ImageButton", {
         Size = UDim2.new(0, 42, 0, 42), Position = UDim2.new(0, 20, 0, 100),
@@ -136,7 +139,29 @@ function Library:CreateWindow(config)
         miniBtn.Visible = minimized
     end
     minBtn.MouseButton1Click:Connect(function() setMinimized(true) end)
-    miniBtn.MouseButton1Click:Connect(function() setMinimized(false) end)
+
+    -- Logika Drag Float Button (Anti-Bug)
+    local floatDragging, floatDragStart, floatStartPos, floatMoved = false, nil, nil, false
+    miniBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            floatDragging = true; floatDragStart = input.Position; floatStartPos = miniBtn.Position; floatMoved = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if floatDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - floatDragStart
+            if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then floatMoved = true end
+            miniBtn.Position = UDim2.new(floatStartPos.X.Scale, floatStartPos.X.Offset + delta.X, floatStartPos.Y.Scale, floatStartPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if floatDragging then
+                floatDragging = false
+                if not floatMoved then setMinimized(false) end
+            end
+        end
+    end)
 
     -- SIDEBAR
     local tabBarW = 130
@@ -161,7 +186,7 @@ function Library:CreateWindow(config)
     Window.Content.Parent = Window.Main
 
     -- ============================================
-    -- CREATE TAB (Toggle & Advanced Dropdown)
+    -- CREATE TAB & SECTION SUPPORT
     -- ============================================
     function Window:CreateTab(name)
         local Page = { Elements = {} }
@@ -187,12 +212,71 @@ function Library:CreateWindow(config)
         
         if #Window.Tabs == 1 then Window:SelectTab(Page) end
 
-        -- METHOD: ADD TOGGLE
-        function Page:AddToggle(label, default, callback)
+        -- SECTION (Collapsible)
+        function Page:AddSection(title, defaultOpen)
+            local isOpen = defaultOpen ~= false 
+
+            local wrapper = new("Frame", {
+                Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y,
+            })
+            wrapper.Parent = Page.Frame
+
+            local container = new("Frame", {
+                Size = UDim2.new(1, 0, 0, 40), BackgroundColor3 = Theme.colors.card, AutomaticSize = Enum.AutomaticSize.Y,
+            }, {
+                new("UICorner", { CornerRadius = UDim.new(0, 8) }),
+                new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }),
+                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder }),
+            })
+            container.Parent = wrapper
+
+            local header = new("TextButton", {
+                Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, Text = "", AutoButtonColor = false,
+            })
+            header.Parent = container
+
+            new("TextLabel", {
+                Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
+                Text = title, Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.text, TextXAlignment = Enum.TextXAlignment.Left,
+            }).Parent = header
+
+            local arrow = new("TextLabel", {
+                Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -35, 0.5, -15), BackgroundTransparency = 1,
+                Text = isOpen and "v" or ">", 
+                Font = Theme.fonts.bold, TextSize = 14, TextColor3 = Theme.colors.accent,
+                TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Center
+            })
+            arrow.Parent = header
+
+            local bodyWrapper = new("Frame", {
+                Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, Visible = isOpen, AutomaticSize = Enum.AutomaticSize.Y,
+            }, {
+                new("UIPadding", { PaddingBottom = UDim.new(0, 8), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
+            })
+            bodyWrapper.Parent = container
+
+            local bodyLayout = new("Frame", {
+                Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y,
+            }, {
+                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
+            })
+            bodyLayout.Parent = bodyWrapper
+
+            header.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                arrow.Text = isOpen and "v" or ">"
+                bodyWrapper.Visible = isOpen
+            end)
+
+            return bodyLayout
+        end
+
+        -- TOGGLE
+        function Page:AddToggle(parent, label, default, callback)
             local row = new("Frame", {
                 Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.card,
             }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }), new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }) })
-            row.Parent = Page.Frame
+            row.Parent = parent or Page.Frame
 
             new("TextLabel", {
                 Size = UDim2.new(1, -60, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
@@ -229,13 +313,13 @@ function Library:CreateWindow(config)
             end)
         end
 
-        -- METHOD: ADD DROPDOWN (RIGHT SIDE + SEARCH)
-        function Page:AddDropdown(label, options, default, callback)
+        -- DROPDOWN
+        function Page:AddDropdown(parent, label, options, default, callback)
             local row = new("Frame", {
                 Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.colors.card,
                 ClipsDescendants = false, ZIndex = 2,
             }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }), new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }) })
-            row.Parent = Page.Frame
+            row.Parent = parent or Page.Frame
 
             new("TextLabel", {
                 Size = UDim2.new(1, -80, 1, 0), Position = UDim2.new(0, 12, 0, 0), BackgroundTransparency = 1,
@@ -257,58 +341,43 @@ function Library:CreateWindow(config)
             local click = new("TextButton", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "" })
             click.Parent = row
 
-            -- PANEL DROPDOWN (Muncul di KANAN)
             local list = new("Frame", {
-                Size = UDim2.new(0, 200, 0, 0), Position = UDim2.new(1, 10, 0, 0), -- Posisi di kanan (X = 1, +10px)
+                Size = UDim2.new(0, 200, 0, 0), Position = UDim2.new(1, 10, 0, 0),
                 BackgroundColor3 = Theme.colors.panel, BorderSizePixel = 0,
                 Visible = false, ZIndex = 10, ClipsDescendants = true,
-            }, {
-                new("UICorner", { CornerRadius = UDim.new(0, 6) }),
-                new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }),
-            })
+            }, { new("UICorner", { CornerRadius = UDim.new(0, 6) }), new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }) })
             list.Parent = row
 
-            -- SEARCH BAR
             local searchBox = new("TextBox", {
                 Size = UDim2.new(1, -10, 0, 30), Position = UDim2.new(0, 5, 0, 5),
                 BackgroundColor3 = Theme.colors.bg, Text = "", PlaceholderText = "Search...",
-                Font = Theme.fonts.body, TextSize = 12, TextColor3 = Theme.colors.text,
-                PlaceholderColor3 = Theme.colors.text2, ClearTextOnFocus = false, ZIndex = 11,
+                Font = Theme.fonts.body, TextSize = 12, TextColor3 = Theme.colors.text, PlaceholderColor3 = Theme.colors.text2,
+                ClearTextOnFocus = false, ZIndex = 11,
             }, { new("UICorner", { CornerRadius = UDim.new(0, 4) }), new("UIPadding", { PaddingLeft = UDim.new(0, 5) }) })
             searchBox.Parent = list
 
-            -- CONTAINER SCROLL
             local scroll = new("ScrollingFrame", {
                 Size = UDim2.new(1, -10, 0, 0), Position = UDim2.new(0, 5, 0, 40),
                 BackgroundTransparency = 1, ScrollBarThickness = 2, ScrollBarImageColor3 = Theme.colors.text2,
                 CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y, ZIndex = 11,
-            }, {
-                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2) }),
-            })
+            }, { new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 2) }) })
             scroll.Parent = list
 
             local isOpen = false
             local itemButtons = {}
 
-            -- Fungsi Filter Search
             local function updateList(filterText)
                 local query = string.lower(filterText)
                 local visibleCount = 0
                 for _, btn in ipairs(itemButtons) do
-                    if string.find(string.lower(btn.Text), query) then
-                        btn.Visible = true
-                        visibleCount = visibleCount + 1
-                    else
-                        btn.Visible = false
-                    end
+                    if string.find(string.lower(btn.Text), query) then btn.Visible = true; visibleCount = visibleCount + 1
+                    else btn.Visible = false end
                 end
-                -- Atur tinggi scroll berdasarkan item yang keliatan (max 120px)
                 local targetHeight = math.min(visibleCount * 30, 120)
                 scroll.Size = UDim2.new(1, -10, 0, targetHeight)
-                list.Size = UDim2.new(0, 200, 0, targetHeight + 45) -- +45 buat search box & padding
+                list.Size = UDim2.new(0, 200, 0, targetHeight + 45)
             end
 
-            -- Bikin List Item
             for _, opt in ipairs(options) do
                 local optBtn = new("TextButton", {
                     Size = UDim2.new(1, 0, 0, 28), BackgroundColor3 = Theme.colors.panel,
@@ -330,20 +399,13 @@ function Library:CreateWindow(config)
                 end)
             end
 
-            -- Search Logic
-            searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-                updateList(searchBox.Text)
-            end)
+            searchBox:GetPropertyChangedSignal("Text"):Connect(function() updateList(searchBox.Text) end)
 
-            -- Toggle Open/Close
             click.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
                 list.Visible = isOpen
                 arrow.Text = isOpen and "<" or ">"
-                if isOpen then
-                    searchBox.Text = "" -- Reset search
-                    updateList("")       -- Reset list
-                end
+                if isOpen then searchBox.Text = ""; updateList("") end
             end)
         end
 
