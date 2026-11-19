@@ -1,5 +1,5 @@
 -- ============================================
--- STARLESS UI LIBRARY (V5 FLAT STYLE)
+-- STARLESS UI LIBRARY (V6 FINAL)
 -- Created by Cabu
 -- ============================================
 
@@ -177,7 +177,6 @@ end
 function Library:CreateWindow(config)
     config = config or {}
 
-    -- cleanup UI lama
     local old = Players.LocalPlayer:FindFirstChild("PlayerGui")
         and Players.LocalPlayer.PlayerGui:FindFirstChild("StarlessUI")
     if old then old:Destroy() end
@@ -325,10 +324,10 @@ function Library:CreateWindow(config)
     })
     Window.Content.Parent = Window.Main
 
-    -- BUILDERS (FLAT STYLE)
+    -- BUILDERS
     local function buildRow(parent, height)
         local row = new("Frame", {
-            Size = UDim2.new(1, 0, 0, height or 32),
+            Size = UDim2.new(1, 0, 0, height or 30),
             BackgroundTransparency = 1,
         })
         row.Parent = parent
@@ -342,7 +341,7 @@ function Library:CreateWindow(config)
             BackgroundTransparency = 1,
             Text = text,
             Font = Theme.fonts.body,
-            TextSize = 13,
+            TextSize = 12,
             TextColor3 = Theme.colors.text,
             TextXAlignment = Enum.TextXAlignment.Left,
         })
@@ -357,7 +356,7 @@ function Library:CreateWindow(config)
 
         local tabBtn = new("TextButton", {
             Name = "Tab_" .. name,
-            Size = UDim2.new(1, 0, 0, 28),
+            Size = UDim2.new(1, 0, 0, 26),
             BackgroundColor3 = Theme.colors.panel,
             Text = name,
             Font = Theme.fonts.bold,
@@ -401,11 +400,11 @@ function Library:CreateWindow(config)
             })
             wrapper.Parent = Page.Frame
 
-            -- CONTAINER (Hanya kotak section ini yang punya card)
             local container = new("Frame", {
-                Size = UDim2.new(1, 0, 0, 36),
+                Size = UDim2.new(1, 0, 0, 34),
                 BackgroundColor3 = Theme.colors.card,
                 AutomaticSize = Enum.AutomaticSize.Y,
+                ClipsDescendants = false, -- Penting untuk dropdown
             }, {
                 new("UICorner", { CornerRadius = UDim.new(0, 8) }),
                 new("UIStroke", { Color = Theme.colors.border, Thickness = 1 }),
@@ -414,7 +413,7 @@ function Library:CreateWindow(config)
             container.Parent = wrapper
 
             local header = new("TextButton", {
-                Size = UDim2.new(1, 0, 0, 36),
+                Size = UDim2.new(1, 0, 0, 34),
                 BackgroundTransparency = 1,
                 Text = "",
                 AutoButtonColor = false,
@@ -427,7 +426,7 @@ function Library:CreateWindow(config)
                 BackgroundTransparency = 1,
                 Text = title,
                 Font = Theme.fonts.bold,
-                TextSize = 13,
+                TextSize = 12,
                 TextColor3 = Theme.colors.text,
                 TextXAlignment = Enum.TextXAlignment.Left,
             }).Parent = header
@@ -453,8 +452,8 @@ function Library:CreateWindow(config)
             }, {
                 new("UIPadding", {
                     PaddingBottom = UDim.new(0, 8),
-                    PaddingLeft = UDim.new(0, 12),
-                    PaddingRight = UDim.new(0, 12),
+                    PaddingLeft = UDim.new(0, 10),
+                    PaddingRight = UDim.new(0, 10),
                 }),
             })
             bodyWrapper.Parent = container
@@ -501,15 +500,15 @@ function Library:CreateWindow(config)
                 return row
             end
 
-            -- ADD TOGGLE
+            -- ADD TOGGLE (Diperkecil)
             function Section:AddToggle(label, default, callback)
-                local row = buildRow(bodyLayout, 32)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label)
 
                 local state = default or false
                 local track = new("Frame", {
-                    Size = UDim2.new(0, isMobile and 44 or 36, 0, isMobile and 24 or 20),
-                    Position = UDim2.new(1, isMobile and -54 or -46, 0.5, isMobile and -12 or -10),
+                    Size = UDim2.new(0, 30, 0, 16), -- Lebih kecil (sebelumnya 36x20)
+                    Position = UDim2.new(1, -30, 0.5, -8),
                     BackgroundColor3 = state and Theme.colors.accent2 or Theme.colors.panel,
                 }, {
                     new("UICorner", { CornerRadius = UDim.new(1, 0) }),
@@ -517,7 +516,7 @@ function Library:CreateWindow(config)
                 })
                 track.Parent = row
 
-                local knobSize = isMobile and 20 or 16
+                local knobSize = 12 -- Lebih kecil (sebelumnya 16)
                 local knobPosOn  = UDim2.new(1, -(knobSize + 2), 0.5, -(knobSize / 2))
                 local knobPosOff = UDim2.new(0, 2, 0.5, -(knobSize / 2))
 
@@ -551,9 +550,9 @@ function Library:CreateWindow(config)
                 return row
             end
 
-            -- ADD DROPDOWN
+            -- ADD DROPDOWN (Fixed: Muncul ke bawah)
             function Section:AddDropdown(label, options, default, callback)
-                local row = buildRow(bodyLayout, 32)
+                local row = buildRow(bodyLayout, 30)
                 row.ClipsDescendants = false
                 row.ZIndex = 2
 
@@ -565,7 +564,7 @@ function Library:CreateWindow(config)
                     BackgroundTransparency = 1,
                     Text = default or "Select...",
                     Font = Theme.fonts.bold,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.accent,
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
@@ -575,9 +574,9 @@ function Library:CreateWindow(config)
                     Size = UDim2.new(0, 20, 1, 0),
                     Position = UDim2.new(1, -20, 0, 0),
                     BackgroundTransparency = 1,
-                    Text = ">",
+                    Text = "v",
                     Font = Theme.fonts.bold,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text2,
                     TextXAlignment = Enum.TextXAlignment.Right,
                 })
@@ -591,8 +590,8 @@ function Library:CreateWindow(config)
                 click.Parent = row
 
                 local list = new("Frame", {
-                    Size = UDim2.new(0, 200, 0, 0),
-                    Position = UDim2.new(1, 10, 0, 0),
+                    Size = UDim2.new(1, 0, 0, 0),
+                    Position = UDim2.new(0, 0, 1, 4),
                     BackgroundColor3 = Theme.colors.panel,
                     BorderSizePixel = 0,
                     Visible = false,
@@ -605,13 +604,13 @@ function Library:CreateWindow(config)
                 list.Parent = row
 
                 local searchBox = new("TextBox", {
-                    Size = UDim2.new(1, -10, 0, 30),
+                    Size = UDim2.new(1, -10, 0, 26),
                     Position = UDim2.new(0, 5, 0, 5),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = "",
                     PlaceholderText = "Search...",
                     Font = Theme.fonts.body,
-                    TextSize = 12,
+                    TextSize = 11,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
                     ClearTextOnFocus = false,
@@ -624,7 +623,7 @@ function Library:CreateWindow(config)
 
                 local scroll = new("ScrollingFrame", {
                     Size = UDim2.new(1, -10, 0, 0),
-                    Position = UDim2.new(0, 5, 0, 40),
+                    Position = UDim2.new(0, 5, 0, 34),
                     BackgroundTransparency = 1,
                     ScrollBarThickness = 2,
                     ScrollBarImageColor3 = Theme.colors.text2,
@@ -651,26 +650,26 @@ function Library:CreateWindow(config)
                             btn.Visible = false
                         end
                     end
-                    local h = math.min(count * 30, 120)
+                    local h = math.min(count * 26, 120)
                     scroll.Size = UDim2.new(1, -10, 0, h)
-                    scroll.CanvasSize = UDim2.new(0, 0, 0, count * 30)
-                    list.Size = UDim2.new(0, 200, 0, h + 45)
+                    scroll.CanvasSize = UDim2.new(0, 0, 0, count * 26)
+                    list.Size = UDim2.new(1, 0, 0, h + 40)
                 end
 
                 for _, opt in ipairs(options) do
                     local optBtn = new("TextButton", {
-                        Size = UDim2.new(1, 0, 0, 28),
+                        Size = UDim2.new(1, 0, 0, 24),
                         BackgroundColor3 = Theme.colors.panel,
                         Text = opt,
                         Font = Theme.fonts.body,
-                        TextSize = 12,
+                        TextSize = 11,
                         TextColor3 = Theme.colors.text,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         AutoButtonColor = false,
                         ZIndex = 12,
                     }, {
                         new("UICorner", { CornerRadius = UDim.new(0, 4) }),
-                        new("UIPadding", { PaddingLeft = UDim.new(0, 5) }),
+                        new("UIPadding", { PaddingLeft = UDim.new(0, 8) }),
                     })
                     optBtn.Parent = scroll
                     table.insert(itemButtons, optBtn)
@@ -684,7 +683,7 @@ function Library:CreateWindow(config)
                     optBtn.MouseButton1Click:Connect(function()
                         displayLabel.Text = opt
                         list.Visible = false
-                        arrow.Text = ">"
+                        arrow.Text = "v"
                         if callback then callback(opt) end
                     end)
                 end
@@ -697,7 +696,7 @@ function Library:CreateWindow(config)
                 click.MouseButton1Click:Connect(function()
                     isOpen = not isOpen
                     list.Visible = isOpen
-                    arrow.Text = isOpen and "<" or ">"
+                    arrow.Text = isOpen and "^" or "v"
                     if isOpen then
                         searchBox.Text = ""
                         updateList("")
@@ -708,10 +707,10 @@ function Library:CreateWindow(config)
                 return row
             end
 
-            -- ADD BUTTON
+            -- ADD BUTTON (Dengan Efek Flash)
             function Section:AddButton(label, callback)
                 local btn = new("TextButton", {
-                    Size = UDim2.new(1, 0, 0, 30),
+                    Size = UDim2.new(1, 0, 0, 28),
                     BackgroundColor3 = Theme.colors.hover,
                     Text = label,
                     Font = Theme.fonts.bold,
@@ -722,27 +721,37 @@ function Library:CreateWindow(config)
                     new("UICorner", { CornerRadius = UDim.new(0, 4) }),
                 })
                 btn.Parent = bodyLayout
+                
                 btn.MouseEnter:Connect(function()
                     tween(btn, TI.fast, { BackgroundColor3 = Theme.colors.border })
                 end)
                 btn.MouseLeave:Connect(function()
                     tween(btn, TI.fast, { BackgroundColor3 = Theme.colors.hover })
                 end)
+                
+                -- Efek Flash saat klik
                 btn.MouseButton1Click:Connect(function()
+                    btn.BackgroundColor3 = Theme.colors.text
+                    btn.TextColor3 = Theme.colors.bg
+                    task.delay(0.1, function()
+                        btn.BackgroundColor3 = Theme.colors.border
+                        btn.TextColor3 = Theme.colors.text
+                    end)
                     if callback then callback() end
                 end)
+                
                 table.insert(Page.Elements, btn)
                 return btn
             end
 
-            -- ADD TEXTBOX
+            -- ADD TEXTBOX (Rata Tengah & Teks Bisa Diketik)
             function Section:AddTextBox(label, placeholder, default, callback)
-                local row = buildRow(bodyLayout, 32)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(0.5, -8, 1, 0) })
 
                 local box = new("TextBox", {
-                    Size = UDim2.new(0.5, -16, 0, 24),
-                    Position = UDim2.new(0.5, 8, 0.5, -12),
+                    Size = UDim2.new(0.5, -16, 0, 22),
+                    Position = UDim2.new(0.5, 8, 0.5, -11),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = default or "",
                     PlaceholderText = placeholder or "",
@@ -750,9 +759,10 @@ function Library:CreateWindow(config)
                     TextSize = 12,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextXAlignment = Enum.TextXAlignment.Center, -- Rata Tengah
                     ClearTextOnFocus = false,
                     ClipsDescendants = true,
+                    TextEditable = true,
                 }, {
                     new("UICorner", { CornerRadius = UDim.new(0, 4) }),
                     new("UIPadding", {
@@ -770,14 +780,14 @@ function Library:CreateWindow(config)
                 return box
             end
 
-            -- ADD NUMERICBOX
+            -- ADD NUMERICBOX (Rata Tengah & Angka Bebas Diketik)
             function Section:AddNumericBox(label, placeholder, default, min, max, callback)
-                local row = buildRow(bodyLayout, 32)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(0.5, -8, 1, 0) })
 
                 local box = new("TextBox", {
-                    Size = UDim2.new(0.5, -16, 0, 24),
-                    Position = UDim2.new(0.5, 8, 0.5, -12),
+                    Size = UDim2.new(0.5, -16, 0, 22),
+                    Position = UDim2.new(0.5, 8, 0.5, -11),
                     BackgroundColor3 = Theme.colors.bg,
                     Text = default and tostring(default) or "",
                     PlaceholderText = placeholder or "0",
@@ -785,9 +795,10 @@ function Library:CreateWindow(config)
                     TextSize = 12,
                     TextColor3 = Theme.colors.text,
                     PlaceholderColor3 = Theme.colors.text2,
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextXAlignment = Enum.TextXAlignment.Center, -- Rata Tengah
                     ClearTextOnFocus = false,
                     ClipsDescendants = true,
+                    TextEditable = true,
                 }, {
                     new("UICorner", { CornerRadius = UDim.new(0, 4) }),
                     new("UIPadding", {
@@ -835,7 +846,7 @@ function Library:CreateWindow(config)
 
             -- ADD KEYBIND
             function Section:AddKeybind(label, defaultKey, callback)
-                local row = buildRow(bodyLayout, 32)
+                local row = buildRow(bodyLayout, 30)
                 buildLabel(row, label, { Size = UDim2.new(1, -80, 1, 0) })
 
                 local keyBtn = new("TextButton", {
@@ -915,7 +926,9 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- DRAG
+    -- ============================================
+    -- DRAG (WINDOW & FLOAT BUTTON) - FIXED
+    -- ============================================
     local dragState = {
         window = { dragging = false, start = nil, startPos = nil },
         float  = { dragging = false, start = nil, startPos = nil, moved = false },
